@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-# SmartSort: AI-Powered Freshness Detection
 
 =======
 # Smart Sorting – Transfer Learning for Identifying Rotten Fruits and Vegetables
