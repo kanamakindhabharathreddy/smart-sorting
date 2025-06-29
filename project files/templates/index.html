@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSort: AI-powered Freshness Detection</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Animate.css for specific, non-scroll effects -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animate On Scroll Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
+    <style>
+        /* --- CSS Variable Definitions --- */
+        :root {
+            --primary: #10b981;
+            --primary-light: #34d399;
+            --primary-dark: #059669;
+            --secondary-blue: #3b82f6;
+            --secondary-purple: #8b5cf6;
+            --secondary-amber: #f59e0b;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --text-color: var(--dark);
+            --body-overlay-color: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --header-text: #ffffff;
+            --section-bg-light: rgba(255, 255, 255, 0.8);
+            --section-bg-dark: rgba(248, 250, 252, 0.8);
+            --navbar-bg: rgba(15, 23, 42, 0.85);
+            --navbar-scrolled-bg: rgba(15, 23, 42, 0.95);
+            --footer-bg: rgba(15, 23, 42, 1);
+            --footer-text: #94a3b8;
+            --hero-content-bg: rgba(0, 0, 0, 0.35);
+            --hero-content-backdrop-blur: blur(8px);
+        }
+
+        body.dark-mode {
+            --text-color: #f8fafc;
+            --body-overlay-color: rgba(0, 0, 0, 0.3);
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --header-text: #f8fafc;
+            --section-bg-light: rgba(26, 32, 44, 0.8);
+            --section-bg-dark: rgba(15, 23, 42, 0.8);
+            --navbar-bg: rgba(5, 15, 25, 0.9);
+            --navbar-scrolled-bg: rgba(0, 0, 0, 0.98);
+            --footer-bg: rgba(0, 0, 0, 1);
+            --footer-text: #a0aec0;
+            --hero-content-bg: rgba(0, 0, 0, 0.5);
+            --hero-content-backdrop-blur: blur(10px);
+            --primary: #4ade80;
+            --secondary-blue: #60a5fa;
+            --secondary-purple: #c084fc;
+            --secondary-amber: #fbbf24;
+        }
+
+        /* --- General Body and Typography --- */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: var(--light);
+            color: var(--text-color);
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            transition: background-color 0.6s ease, color 0.6s ease;
+            background-image: url('https://as1.ftcdn.net/v2/jpg/01/04/31/48/1000_F_104314807_k8sKWaCc9KROYp5rIftRXbXyMbz8y3eZ.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--body-overlay-color);
+            z-index: -1;
+            transition: background-color 0.6s ease;
+        }
+
+        #cursor-spotlight {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 60%);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+            z-index: -1;
+        }
+        body.dark-mode #cursor-spotlight {
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 70%);
+        }
+
+        /* --- Components Styling (Navbar, Hero, Cards, etc.) --- */
+        .navbar {
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: transparent;
+        }
+
+        .navbar.scrolled {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .nav-link > span {
+            display: inline-block;
+            transform: translateY(20px);
+            opacity: 0;
+            animation: slide-up-nav 0.6s ease-out forwards;
+            animation-delay: var(--delay);
+        }
+        @keyframes slide-up-nav { to { transform: translateY(0); opacity: 1; } }
+
+        .navbar a {
+            position: relative;
+            transition: color 0.3s ease;
+        }
+        .navbar a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 50%;
+            background-color: var(--primary);
+            transition: all 0.3s ease-out;
+            transform: translateX(-50%);
+        }
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .navbar a, #themeToggle { color: var(--header-text); text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .navbar a:hover, #themeToggle:hover { color: var(--primary); }
+
+        .hero-section {
+            background: none;
+            position: relative;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            padding: 8rem 1rem;
+        }
+
+        .hero-content {
+            position: relative;
+            overflow: hidden;
+            padding: 3rem 2rem;
+            border-radius: 2rem;
+            background: var(--hero-content-bg);
+            backdrop-filter: var(--hero-content-backdrop-blur);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-content h1, .hero-content p {
+            color: var(--header-text);
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+        }
+        
+        .animated-title .word-wrapper {
+            display: inline-block;
+            overflow: hidden;
+            vertical-align: bottom;
+            margin-right: 0.5rem;
+        }
+        .animated-title .word-wrapper > span {
+            display: inline-block;
+            transform: translateY(110%);
+            animation: slide-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes slide-up { to { transform: translateY(0); } }
+
+        .cta-button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            color: white;
+            z-index: 1;
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s ease;
+        }
+        .cta-button:hover::before { left: 100%; }
+        
+        .cta-button:hover {
+            transform: translateY(-8px) scale(1.05);
+        }
+        
+        .section { padding: 6rem 1rem; position: relative; overflow: hidden; }
+        
+        main section {
+            background-color: transparent;
+        }
+        
+        .section-title, .section-intro { color: var(--dark-text); }
+        .dark-mode .section-title, .dark-mode .section-intro { color: var(--light-text); }
+
+        .card-container { perspective: 1000px; }
+
+        .card {
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(12px);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            will-change: transform;
+            transform-style: preserve-3d;
+        }
+        body.dark-mode .card {
+            background-color: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card:hover {
+            border-color: rgba(var(--glow-rgb), 0.7);
+            box-shadow: 0 0 25px rgba(var(--glow-rgb), 0.25), 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        #about .card:nth-of-type(1) { --glow-rgb: 74, 222, 128; }
+        #about .card:nth-of-type(2) { --glow-rgb: 96, 165, 250; }
+        #about .card:nth-of-type(3) { --glow-rgb: 192, 132, 252; }
+        #developers .card { --glow-rgb: 255, 255, 255; }
+        
+        .card h3, .card p { color: var(--dark-text); }
+        .dark-mode .card h3, .dark-mode .card p { color: var(--light-text); }
+
+        .card .social-icon { color: var(--dark-text); transition: color 0.3s ease, transform 0.3s ease; }
+        .dark-mode .card .social-icon { color: var(--light-text); }
+        .card .social-icon:hover { color: var(--primary); transform: scale(1.2); }
+        
+        .tech-card {
+            border-width: 1px;
+            border-color: var(--card-border-light);
+            animation: breathe 4s ease-in-out infinite;
+            animation-delay: var(--delay);
+        }
+        body.dark-mode .tech-card {
+            border-color: var(--card-border-dark);
+        }
+        .tech-card:hover {
+            border-color: var(--primary);
+            --glow-color: 16, 185, 129;
+        }
+        
+        @keyframes breathe { 0%, 100% { transform: scale(1); box-shadow: 0 5px 15px rgba(0,0,0,0.1); } 50% { transform: scale(1.05); box-shadow: 0 8px 25px rgba(0,0,0,0.15); } }
+        
+        .footer { background-color: transparent; color: var(--footer-text);}
+        
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000;
+            opacity: 0; visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal-overlay.open { opacity: 1; visibility: visible; }
+        .modal-content {
+            background: var(--card-bg-light);
+            border: 1px solid var(--card-border-light);
+            backdrop-filter: blur(12px);
+            color: var(--dark-text);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .dark-mode .modal-content {
+            background: var(--card-bg-dark);
+            border: 1px solid var(--card-border-dark);
+            color: var(--light-text);
+        }
+        .modal-overlay.open .modal-content { transform: translateY(0) scale(1); }
+        .modal-close-button {
+            position: absolute; top: 1rem; right: 1rem;
+            background: none; border: none; font-size: 1.5rem;
+            cursor: pointer; color: inherit;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .modal-close-button:hover { color: var(--primary); transform: rotate(90deg); }
+        .upload-area { border: 2px dashed var(--primary); background-color: rgba(16, 185, 129, 0.05); transition: background-color 0.3s ease; }
+        .upload-area.dragover { background-color: rgba(16, 185, 129, 0.15); }
+        .loading-spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result-fresh { color: var(--primary); }
+        .result-rotten { color: #ef4444; }
+        
+        .animate-shake { animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+
+        #confetti-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 9999; }
+        .fun-fact-container { margin-top: 1rem; padding: 1rem; background-color: rgba(0,0,0,0.05); border-radius: 0.75rem; font-style: italic; }
+        .dark-mode .fun-fact-container { background-color: rgba(255,255,255,0.05); }
+
+        .btn-green { background: linear-gradient(45deg, var(--primary-light), var(--primary)); box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5); }
+        .btn-green:hover { box-shadow: 0 15px 40px rgba(16, 185, 129, 0.6); }
+        .btn-blue { background: linear-gradient(45deg, #60a5fa, #3b82f6); box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5); }
+        .btn-blue:hover { box-shadow: 0 15px 40px rgba(59, 130, 246, 0.6); }
+        .btn-purple { background: linear-gradient(45deg, #c084fc, #a855f7); box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5); }
+        .btn-purple:hover { box-shadow: 0 15px 40px rgba(168, 85, 247, 0.6); }
+        .btn-amber { background: linear-gradient(45deg, #fbbf24, #f59e0b); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.5); }
+        .btn-amber:hover { box-shadow: 0 15px 40px rgba(245, 158, 11, 0.6); }
+
+    </style>
+</head>
+<body class="dark-mode"> <!-- Set dark mode by default -->
+    
+    <div id="cursor-spotlight"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar fixed w-full z-50 py-4">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-extrabold flex items-center" data-aos="fade-right">
+                <span class="text-white">Smart</span><span class="text-green-500">Sort</span>
+                <i class="fas fa-leaf ml-2 text-green-500"></i>
+            </a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="#home" class="nav-link font-medium"><span style="--delay: 0.1s;">Home</span></a>
+                <a href="#about" class="nav-link font-medium"><span style="--delay: 0.2s;">About</span></a>
+                <a href="#tech" class="nav-link font-medium"><span style="--delay: 0.3s;">Technology</span></a>
+                <a href="#developers" class="nav-link font-medium"><span style="--delay: 0.4s;">Team</span></a>
+                <button id="themeToggle" aria-label="Toggle dark mode" class="focus:outline-none nav-link"><span style="--delay: 0.6s;"><i class="fas fa-moon text-xl" id="themeIcon"></i></span></button>
+            </div>
+             <div class="md:hidden flex items-center space-x-4">
+                <button id="modal-open-button-mobile" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full text-sm">Predict</button>
+                <button id="mobileMenuBtn" class="text-white focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobileMenu" class="hidden md:hidden bg-slate-800 bg-opacity-95 absolute top-full left-0 w-full">
+            <a href="#home" class="block text-center py-3 px-4">Home</a>
+            <a href="#about" class="block text-center py-3 px-4">About</a>
+            <a href="#tech" class="block text-center py-3 px-4">Technology</a>
+            <a href="#developers" class="block text-center py-3 px-4">Team</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header id="home" class="hero-section">
+        <div class="hero-content text-center" data-aos="zoom-in">
+            <h1 class="animated-title text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+                <span class="word-wrapper"><span style="--delay: 0.1s">Revolutionizing</span></span>
+                <span class="word-wrapper"><span style="--delay: 0.3s">Freshness</span></span>
+                <span class="word-wrapper"><span style="--delay: 0.5s">Detection</span></span>
+            </h1>
+            <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto animate__animated animate__fadeInUp" style="animation-delay: 1s;">
+                An AI-powered solution to reduce food waste by identifying the freshness of produce instantly.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 animate__animated animate__fadeInUp" style="animation-delay: 1s;">
+                <button id="modal-open-button-hero" class="cta-button btn-green font-bold py-4 px-10 rounded-full text-lg">
+                    <span>Start Predicting</span>
+                </button>
+                <a href="#about" class="bg-transparent border-2 border-white text-white font-bold py-4 px-10 rounded-full text-lg hover:bg-white hover:bg-opacity-20 transition-all duration-300">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- About Section -->
+        <section id="about" class="section">
+            <div class="container mx-auto text-center">
+                <h2 class="section-title text-3xl md:text-4xl font-bold mb-4" data-aos="fade-up">What is SmartSort?</h2>
+                <p class="section-intro max-w-3xl mx-auto mb-12 text-lg" data-aos="fade-up" data-aos-delay="100">SmartSort is a cutting-edge project that leverages Artificial Intelligence to classify the freshness of produce. By simply uploading an image, our model can determine if a fruit or vegetable is fresh or rotten, helping to reduce food waste at both consumer and industrial levels.</p>
+                <div class="grid md:grid-cols-3 gap-8 card-container">
+                    <div class="card p-8 rounded-xl" data-aos="fade-up" data-aos-delay="200">
+                        <div class="text-4xl mb-4 text-green-500"><i class="fas fa-camera"></i></div>
+                        <h3 class="text-xl font-bold mb-2">Easy to Use</h3>
+                        <p>Just snap a photo. Our intuitive interface makes freshness detection a breeze for everyone.</p>
+                    </div>
+                    <div class="card p-8 rounded-xl" data-aos="fade-up" data-aos-delay="300">
+                        <div class="text-4xl mb-4 text-blue-500"><i class="fas fa-brain"></i></div>
+                        <h3 class="text-xl font-bold mb-2">AI-Powered</h3>
+                        <p>Utilizes a deep learning model trained on thousands of images for high accuracy.</p>
+                    </div>
+                    <div class="card p-8 rounded-xl" data-aos="fade-up" data-aos-delay="400">
+                        <div class="text-4xl mb-4 text-purple-500"><i class="fas fa-globe"></i></div>
+                        <h3 class="text-xl font-bold mb-2">Global Impact</h3>
+                        <p>Aims to significantly reduce the 1.3 billion tonnes of food wasted globally each year.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Section -->
+        <section id="tech" class="section">
+             <div class="container mx-auto text-center">
+                 <h2 class="section-title text-3xl md:text-4xl font-bold mb-12" data-aos="fade-up">Technology Stack</h2>
+                 <div class="flex justify-center items-start flex-wrap gap-12 card-container" data-aos="fade-up" data-aos-delay="100">
+                    <div class="tech-card-wrapper text-center w-32" data-aos="zoom-in" data-aos-delay="100">
+                        <div class="card tech-card p-6 rounded-2xl shadow-md text-4xl mb-3" style="--delay: 0.1s">
+                            <i class="fab fa-python"></i>
+                        </div>
+                        <p class="font-semibold mt-2">Python</p>
+                    </div>
+                     <div class="tech-card-wrapper text-center w-32" data-aos="zoom-in" data-aos-delay="200">
+                        <div class="card tech-card p-6 rounded-2xl shadow-md text-4xl mb-3" style="--delay: 0.2s">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <p class="font-semibold mt-2">AI / ML</p>
+                    </div>
+                     <div class="tech-card-wrapper text-center w-32" data-aos="zoom-in" data-aos-delay="300">
+                        <div class="card tech-card p-6 rounded-2xl shadow-md text-4xl mb-3" style="--delay: 0.3s">
+                            <i class="fab fa-html5"></i>
+                        </div>
+                        <p class="font-semibold mt-2">HTML5</p>
+                    </div>
+                     <div class="tech-card-wrapper text-center w-32" data-aos="zoom-in" data-aos-delay="400">
+                        <div class="card tech-card p-6 rounded-2xl shadow-md text-4xl mb-3" style="--delay: 0.4s">
+                            <i class="fab fa-js"></i>
+                        </div>
+                        <p class="font-semibold mt-2">JavaScript</p>
+                    </div>
+                     <div class="tech-card-wrapper text-center w-32" data-aos="zoom-in" data-aos-delay="500">
+                        <div class="card tech-card p-6 rounded-2xl shadow-md text-4xl mb-3" style="--delay: 0.5s">
+                            <i class="fas fa-cloud"></i>
+                        </div>
+                        <p class="font-semibold mt-2">Cloud Services</p>
+                    </div>
+                 </div>
+             </div>
+        </section>
+
+        <!-- Team Section -->
+        <section id="developers" class="section">
+            <div class="container mx-auto px-4">
+                <h2 class="section-title text-3xl md:text-4xl font-bold text-center mb-12" data-aos="fade-up">Meet the Innovators</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 card-container">
+                    <div class="card text-center p-8 rounded-2xl" data-aos="flip-left" data-aos-delay="100">
+                         <img class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg object-cover" src="https://i.ibb.co/CsQXrmrp/bharath.png" alt="Kanamakindha Bharath Reddy">
+                        <h3 class="text-xl font-bold">Kanamakindha Bharath Reddy</h3>
+                        <p class="text-green-500 mb-3 font-semibold">Python Developer</p>
+                        <div class="flex justify-center space-x-4 mt-4">
+                            <a href="mailto:kanamakindhabharathreddy@gmail.com" class="social-icon text-2xl" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                            <a href="https://www.linkedin.com/in/bharath-reddy-kanamakindha" target="_blank" class="social-icon text-2xl" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://github.com/kanamakindhabharathreddy" target="_blank" class="social-icon text-2xl" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <div class="card text-center p-8 rounded-2xl" data-aos="flip-left" data-aos-delay="200">
+                         <img class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg object-cover" src="https://i.ibb.co/HLrknN8/mohan.png" alt="Nandaluru Mohan Reddy">
+                        <h3 class="text-xl font-bold">Nandaluru Mohan Reddy</h3>
+                        <p class="text-blue-500 mb-3 font-semibold">Full-stack Developer</p>
+                        <div class="flex justify-center space-x-4 mt-4">
+                             <a href="mailto:mohanreddy232312@gmail.com" class="social-icon text-2xl" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                            <a href="http://linkedin.com/in/mohanreddynandaluru" target="_blank" class="social-icon text-2xl" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://github.com/mohanreddynandaluru" target="_blank" class="social-icon text-2xl" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                    <div class="card text-center p-8 rounded-2xl" data-aos="flip-left" data-aos-delay="300">
+                         <img class="w-32 h-32 rounded-full mx-auto mb-4 border-4 border-white shadow-lg object-cover" src="https://i.ibb.co/yQxG4h4/murali.png" alt="G Murali">
+                        <h3 class="text-xl font-bold">G Murali</h3>
+                        <p class="text-purple-500 mb-3 font-semibold">Data Scientist</p>
+                        <div class="flex justify-center space-x-4 mt-4">
+                            <a href="mailto:mistermurari91@gmail.com" class="social-icon text-2xl" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                            <a href="https://www.linkedin.com/in/gundluri-murali" target="_blank" class="social-icon text-2xl" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="https://github.com/murali48" target="_blank" class="social-icon text-2xl" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Prediction Modal -->
+    <div id="prediction-modal" class="modal-overlay">
+        <div id="modal-content-area" class="modal-content">
+            <!-- Content is injected by JavaScript -->
+        </div>
+    </div>
+    
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Footer -->
+    <footer class="footer py-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 SmartSort. All Rights Reserved.</p>
+            <p class="text-sm">Fighting food waste with technology.</p>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // --- VERIFIED & REFACTORED JAVASCRIPT ---
+
+        // --- Global App Setup ---
+        AOS.init({ once: true, duration: 800 });
+
+        const UI = {
+            themeToggle: document.getElementById('themeToggle'),
+            themeIcon: document.getElementById('themeIcon'),
+            body: document.body,
+            navbar: document.querySelector('.navbar'),
+            mobileMenuBtn: document.getElementById('mobileMenuBtn'),
+            mobileMenu: document.getElementById('mobileMenu'),
+            openModalButtons: [
+                document.getElementById('modal-open-button-hero'),
+                document.getElementById('modal-open-button-mobile')
+            ],
+            modal: document.getElementById('prediction-modal'),
+            modalContent: document.getElementById('modal-content-area'),
+            cursorSpotlight: document.getElementById('cursor-spotlight')
+        };
+        
+        // --- Core UI Listeners & Functions ---
+        const setupCoreListeners = () => {
+            window.addEventListener('scroll', () => UI.navbar.classList.toggle('scrolled', window.scrollY > 50));
+            UI.themeToggle.addEventListener('click', () => {
+                const isDark = UI.body.classList.toggle('dark-mode');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                updateThemeIcon(isDark);
+            });
+            UI.mobileMenuBtn.addEventListener('click', () => UI.mobileMenu.classList.toggle('hidden'));
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+                    UI.mobileMenu.classList.add('hidden');
+                });
+            });
+            UI.openModalButtons.forEach(btn => btn.addEventListener('click', openModal));
+            UI.modal.addEventListener('click', e => { if (e.target === UI.modal) closeModal(); });
+            
+            document.querySelectorAll('.card-container').forEach(container => {
+                container.addEventListener('mousemove', e => {
+                    container.querySelectorAll('.card').forEach(card => {
+                        const { left, top, width, height } = card.getBoundingClientRect();
+                        const x = e.clientX - left;
+                        const y = e.clientY - top;
+                        const rotateX = -1 * ((y - height / 2) / (height / 2)) * 8; 
+                        const rotateY = ((x - width / 2) / (width / 2)) * 8;
+                        card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.03)`;
+                    });
+                });
+                container.addEventListener('mouseleave', () => {
+                    container.querySelectorAll('.card').forEach(card => {
+                        card.style.transform = 'rotateX(0) rotateY(0) scale(1)';
+                    });
+                });
+            });
+            
+            window.addEventListener('mousemove', e => {
+                UI.cursorSpotlight.style.left = e.clientX + 'px';
+                UI.cursorSpotlight.style.top = e.clientY + 'px';
+            });
+        };
+
+        const updateThemeIcon = (isDark) => {
+            UI.themeIcon.classList.toggle('fa-sun', isDark);
+            UI.themeIcon.classList.toggle('fa-moon', !isDark);
+        };
+        
+        // --- Modal State Management & Rendering ---
+        const openModal = () => {
+            UI.modal.classList.add('open');
+            UI.body.style.overflow = 'hidden';
+            renderModalState('upload');
+        };
+
+        const closeModal = () => {
+            UI.modal.classList.remove('open');
+            UI.body.style.overflow = '';
+        };
+
+        const renderModalState = (state, data = {}) => {
+            UI.modalContent.innerHTML = getModalHTML(state, data);
+            addModalEventListeners();
+            if (state === 'result' && data.isFresh) {
+                triggerConfetti();
+            }
+        };
+
+        // --- HTML Templates for Modal States ---
+        const getModalHTML = (state, data) => {
+            const closeButton = `<button class="modal-close-button" aria-label="Close modal"><i class="fas fa-times"></i></button>`;
+            switch (state) {
+                case 'loading':
+                    return `${closeButton}<div class="text-center p-8"><img src="${data.imageSrc}" alt="Analyzing..." class="max-h-40 w-auto mx-auto rounded-lg shadow-md mb-4"/><div class="loading-spinner mx-auto"></div><p class="mt-4 text-lg font-medium">Analyzing... Please wait.</p></div>`;
+                case 'result':
+                    const { prediction, confidence, imageSrc, produceName, isFresh } = data;
+                    const article = 'aeiou'.includes(produceName[0].toLowerCase()) ? 'an' : 'a';
+                    const resultIcon = isFresh ? '😋' : '🤢';
+                    const animationClass = isFresh ? 'animate__animated animate__tada' : 'animate-shake';
+                    const recipeButtonHtml = isFresh ? `<button class="get-recipes-button cta-button btn-blue py-2 px-4 rounded-full text-sm" data-produce="${produceName}">✨ Get Recipes</button>` : '';
+                    const tipsButtonHtml = `<button class="get-tips-button cta-button btn-purple py-2 px-4 rounded-full text-sm" data-produce="${produceName}">💡 Get Preservation Tips</button>`;
+                    const funFactButtonHtml = `<button class="get-fun-fact-button cta-button btn-amber py-2 px-4 rounded-full text-sm" data-produce="${produceName}">🤔 Fun Fact</button>`;
+                    return `${closeButton}<div class="text-center p-4"><h2 class="text-2xl font-bold mb-4">Prediction Result</h2><div class="text-6xl mb-4 ${animationClass}">${resultIcon}</div><img src="${imageSrc}" alt="Analyzed Image" class="max-h-40 w-auto mx-auto rounded-lg shadow-md mb-4"/><p class="text-2xl font-semibold mb-2">It's ${article} ${produceName}!</p><p class="text-4xl font-extrabold mb-2 ${isFresh ? 'result-fresh' : 'result-rotten'}">${prediction}</p><p class="text-lg mb-6">Confidence: ${confidence}%</p><div class="flex justify-center flex-wrap gap-4"><button class="predict-another-button cta-button btn-green py-3 px-8 rounded-full text-lg"><i class="fas fa-redo mr-2"></i>Predict Another</button>${recipeButtonHtml}${tipsButtonHtml}${funFactButtonHtml}</div><div class="fun-fact-container mt-4 hidden"></div></div>`;
+                case 'error':
+                     return `${closeButton}<div class="text-center p-4"><h2 class="text-2xl font-bold mb-4">Error</h2><div class="text-6xl mb-4 text-red-500"><i class="fas fa-exclamation-triangle"></i></div><p class="text-lg">${data.message}</p><button class="predict-another-button cta-button btn-green mt-6 py-3 px-8 rounded-full text-lg"><i class="fas fa-redo mr-2"></i>Try Again</button></div>`;
+                default:
+                    return `${closeButton}<div><h2 class="text-2xl font-bold text-center mb-6">Check Produce Freshness</h2><div class="modal-error-msg text-red-500 text-center mb-4 font-medium hidden"></div><label for="file-upload-input" class="upload-area w-full h-48 rounded-lg cursor-pointer flex flex-col items-center justify-center text-center p-4"><i class="fas fa-cloud-upload-alt text-4xl mb-3 text-gray-400"></i><p class="font-semibold">Click to upload or drag & drop</p><p class="text-xs text-gray-500">PNG, JPG, or other image formats</p></label><input type="file" id="file-upload-input" class="hidden" accept="image/*"></div>`;
+            }
+        };
+
+        const addModalEventListeners = () => {
+            UI.modalContent.addEventListener('click', handleModalClicks);
+            const fileInput = UI.modalContent.querySelector('#file-upload-input');
+            if(fileInput) fileInput.addEventListener('change', handleFileSelection);
+            
+            const dropArea = UI.modalContent.querySelector('.upload-area');
+            if (dropArea) {
+                dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
+                dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
+                dropArea.addEventListener('drop', e => {
+                    e.preventDefault();
+                    dropArea.classList.remove('dragover');
+                    if (e.dataTransfer.files.length) handleFileAndPredict(e.dataTransfer.files[0]);
+                });
+            }
+        };
+
+        const handleModalClicks = (e) => {
+            if (e.target.closest('.modal-close-button')) closeModal();
+            if (e.target.closest('.predict-another-button')) renderModalState('upload');
+            if (e.target.closest('.get-recipes-button')) getRecipes(e.target.dataset.produce, e.target);
+            if (e.target.closest('.get-tips-button')) getPreservationTips(e.target.dataset.produce, e.target);
+            if (e.target.closest('.get-fun-fact-button')) getFunFact(e.target.dataset.produce, e.target);
+        };
+
+        const handleFileSelection = (e) => {
+            if (e.target.files.length) handleFileAndPredict(e.target.files[0]);
+        };
+        
+        // --- API & Prediction Logic ---
+        const handleFileAndPredict = (file) => {
+            const errorMsgContainer = UI.modalContent.querySelector('.modal-error-msg');
+            if (!file || !file.type.startsWith('image/')) {
+                if (errorMsgContainer) {
+                    errorMsgContainer.textContent = 'Please select a valid image file.';
+                    errorMsgContainer.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const imageSrc = e.target.result;
+                renderModalState('loading', { imageSrc });
+
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                    const response = await fetch('/predict', { method: 'POST', body: formData });
+                    const result = await response.json();
+                    if (result.success) {
+                        const [produceName, freshness] = parsePrediction(result.prediction);
+                        renderModalState('result', {
+                            prediction: freshness,
+                            confidence: parseFloat(result.confidence).toFixed(1),
+                            imageSrc,
+                            produceName,
+                            isFresh: freshness.toLowerCase() === 'healthy'
+                        });
+                    } else {
+                         renderModalState('error', { message: result.prediction });
+                    }
+                } catch (error) {
+                    console.error("Prediction failed:", error);
+                    renderModalState('error', { message: "Could not connect to the server." });
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+        
+        const parsePrediction = (predictionString) => {
+            const parts = predictionString.match(/(.+) \((.+)\)/);
+            return (parts && parts.length === 3) ? [parts[1], parts[2]] : ["Produce", "Unknown"];
+        };
+        
+        const getGeminiContent = async (prompt, schema, button) => {
+            button.innerHTML = `<div class="loading-spinner mx-auto" style="width: 20px; height: 20px; border-left-color: white;"></div>`;
+            button.disabled = true;
+
+            const apiKey = "AIzaSyC6lYuemsEGOqeP3UZ6Jg3yFgLpQCFOybI"; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json", responseSchema: schema } };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content.parts[0].text) {
+                    return JSON.parse(result.candidates[0].content.parts[0].text);
+                } else { throw new Error("Invalid response from Gemini API."); }
+            } catch (error) {
+                console.error("Error fetching from Gemini:", error);
+                alert("Sorry, there was an error connecting to the AI service.");
+                button.innerHTML = button.dataset.originalText;
+                button.disabled = false;
+                return null;
+            }
+        };
+
+        const getRecipes = async (produceName, button) => {
+            button.dataset.originalText = button.innerHTML;
+            const prompt = `Generate three simple and creative recipes for a fresh ${produceName}. For each recipe, provide a unique name, a list of ingredients, and a short set of instructions.`;
+            const schema = { type: "OBJECT", properties: { "recipes": { type: "ARRAY", items: { type: "OBJECT", properties: { "recipeName": { "type": "STRING" }, "ingredients": { "type": "ARRAY", "items": { "type": "STRING" } }, "instructions": { "type": "STRING" } }, required: ["recipeName", "ingredients", "instructions"] } } }, required: ["recipes"] };
+            
+            const recipeData = await getGeminiContent(prompt, schema, button);
+            if (recipeData && recipeData.recipes) {
+                localStorage.setItem('smartSortRecipes', JSON.stringify({ produceName, recipes: recipeData.recipes }));
+                window.location.href = '/recipes';
+            }
+        };
+
+        const getPreservationTips = async (produceName, button) => {
+            button.dataset.originalText = button.innerHTML;
+            const prompt = `Generate three simple and effective preservation tips for a fresh ${produceName}. For each tip, provide a short title and a one-sentence description.`;
+            const schema = { type: "OBJECT", properties: { "tips": { type: "ARRAY", items: { type: "OBJECT", properties: { "tipTitle": { "type": "STRING" }, "description": { "type": "STRING" } }, required: ["tipTitle", "description"] } } }, required: ["tips"] };
+            
+            const tipsData = await getGeminiContent(prompt, schema, button);
+            if (tipsData && tipsData.tips) {
+                localStorage.setItem('smartSortPreservationTips', JSON.stringify({ produceName, tips: tipsData.tips }));
+                window.location.href = '/preservation';
+            }
+        };
+        
+        const getFunFact = async (produceName, button) => {
+            const funFactContainer = UI.modalContent.querySelector('.fun-fact-container');
+            if (!funFactContainer) return;
+
+            button.innerHTML = `<div class="loading-spinner mx-auto" style="width: 20px; height: 20px; border-left-color: white;"></div>`;
+            button.disabled = true;
+
+            const prompt = `Tell me one surprising and fun fact about ${produceName}.`;
+            const apiKey = "AIzaSyC6lYuemsEGOqeP3UZ6Jg3yFgLpQCFOybI"; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const result = await response.json();
+                if (result.candidates && result.candidates[0].content.parts[0].text) {
+                    funFactContainer.innerHTML = result.candidates[0].content.parts[0].text;
+                    funFactContainer.classList.remove('hidden');
+                } else {
+                    funFactContainer.innerHTML = `Could not get a fun fact right now.`;
+                    funFactContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Error fetching fun fact:", error);
+                funFactContainer.innerHTML = `Error connecting to the fun fact service.`;
+                funFactContainer.classList.remove('hidden');
+            }
+        };
+
+        const triggerConfetti = () => {
+            const canvas = document.getElementById('confetti-canvas');
+            if (typeof confetti === 'function' && canvas) {
+                const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+                myConfetti({ particleCount: 150, spread: 160, origin: { y: 0.6 } });
+            }
+        };
+
+        // --- Initial App Start ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupCoreListeners();
+            const initialTheme = localStorage.getItem('theme') || 'dark'; // Dark by default now
+            UI.body.classList.toggle('dark-mode', initialTheme === 'dark');
+            updateThemeIcon(initialTheme === 'dark');
+        });
+        
+    </script>
+</body>
+</html>
