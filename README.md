@@ -1,5 +1,4 @@
 
-=======
 # Smart Sorting – Transfer Learning for Identifying Rotten Fruits and Vegetables
 SmartSort: AI-Powered Freshness Detection
 SmartSort is an intelligent web application that uses deep learning to classify the freshness of fruits and vegetables from an image. It instantly tells you if your produce is "Healthy" or "Rotten" and provides helpful, AI-generated content like recipes, preservation tips, and fun facts to help you reduce food waste and make the most of your fresh ingredients.
