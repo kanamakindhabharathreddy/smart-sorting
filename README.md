@@ -5,7 +5,7 @@ SmartSort is an intelligent web application that uses deep learning to classify 
 
 This project was developed by K. Bharath Reddy, N. Mohan Reddy, and G. Murali as part of the SmartInternz AI/ML Virtual Internship Program.
 
-<<<<<<< HEAD
+
 ---
 
 ## ✨ Features
