@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartSort - Preservation Tips</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #10b981;
+            --secondary-blue: #3b82f6;
+            --secondary-green: #22c55e;
+            --secondary-amber: #f59e0b;
+            --dark-bg: #0f172a;
+            --light-bg: #f3f4f6;
+            --light-text: #f9fafb;
+            --dark-text: #1f2937;
+        }
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: var(--light-bg);
+            color: var(--dark-text);
+        }
+        .dark-mode {
+             background-color: var(--dark-bg);
+             background-image: radial-gradient(at top left, rgba(76, 29, 149, 0.4), transparent 50%), 
+                               radial-gradient(at bottom right, rgba(16, 185, 129, 0.3), transparent 70%);
+             color: var(--light-text);
+        }
+        .tip-card {
+            background-color: white;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e5e7eb;
+            border-top-width: 4px;
+        }
+        .dark-mode .tip-card {
+            background-color: rgba(30, 41, 59, 0.6); 
+            backdrop-filter: blur(12px);
+            border-color: rgba(55, 65, 81, 0.8);
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .tip-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .tip-card.color-blue { border-top-color: var(--secondary-blue); }
+        .tip-card.color-green { border-top-color: var(--secondary-green); }
+        .tip-card.color-amber { border-top-color: var(--secondary-amber); }
+
+        .icon-container { transition: background-color 0.3s ease; }
+        .color-blue .icon-container { background-color: rgba(59, 130, 246, 0.1); }
+        .color-green .icon-container { background-color: rgba(34, 197, 94, 0.1); }
+        .color-amber .icon-container { background-color: rgba(245, 158, 11, 0.1); }
+
+        /* UPDATED: Icon colors now match the border accent colors */
+        .color-blue .icon-container i { color: var(--secondary-blue); }
+        .color-green .icon-container i { color: var(--secondary-green); }
+        .color-amber .icon-container i { color: var(--secondary-amber); }
+
+        .dark-mode .color-blue .icon-container { background-color: rgba(96, 165, 250, 0.1); }
+        .dark-mode .color-green .icon-container { background-color: rgba(74, 222, 128, 0.1); }
+        .dark-mode .color-amber .icon-container { background-color: rgba(251, 191, 36, 0.1); }
+
+        .tip-card h3 {
+             color: var(--dark-text);
+        }
+        .dark-mode .tip-card h3 {
+            color: var(--light-text);
+        }
+        .tip-card p {
+            color: #4b5563; /* Gray-600 */
+        }
+        .dark-mode .tip-card p {
+            color: #d1d5db; /* Gray-300 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 dark:bg-slate-900/80 shadow-md backdrop-blur-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-extrabold flex items-center text-slate-800 dark:text-white">
+                <span class="text-slate-800 dark:text-white">Smart</span><span class="text-green-500">Sort</span>
+                <i class="fas fa-leaf ml-2 text-green-500"></i>
+            </a>
+            <a href="/" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-full transition-colors">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Prediction
+            </a>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <h1 id="tips-main-title" class="text-4xl lg:text-5xl font-extrabold text-center mb-12 text-slate-800 dark:text-white">Preservation Tips</h1>
+        
+        <div id="tips-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Tips will be injected here by JavaScript -->
+        </div>
+    </main>
+
+    <footer class="py-8 mt-12">
+        <div class="container mx-auto text-center text-gray-500 dark:text-gray-400">
+            <p>&copy; 2024 SmartSort. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tipsGrid = document.getElementById('tips-grid');
+            const tipsMainTitle = document.getElementById('tips-main-title');
+
+            const produceIcons = {
+                'Apple': '🍎',
+                'Banana': '🍌',
+                'Bellpepper': '🫑',
+                'Carrot': '🥕',
+                'Cucumber': '�',
+                'Grape': '🍇',
+                'Guava': '🍈',
+                'Jujube': '🍈',
+                'Mango': '🥭',
+                'Orange': '🍊',
+                'Pomegranate': '🍑',
+                'Potato': '🥔',
+                'Strawberry': '🍓',
+                'Tomato': '🍅'
+            };
+
+            const storedTips = localStorage.getItem('smartSortPreservationTips');
+            
+            if (storedTips) {
+                const data = JSON.parse(storedTips);
+                const produceName = data.produceName;
+                const tips = data.tips;
+
+                const produceIcon = produceIcons[produceName] || '🍏';
+                tipsMainTitle.innerHTML = `Preservation Tips for ${produceName} <span class="text-4xl">${produceIcon}</span>`;
+                
+                if (tips && tips.length > 0) {
+                    const colors = ['blue', 'green', 'amber'];
+                    
+                    tips.forEach((tip, index) => {
+                        const tipCard = document.createElement('div');
+                        const colorClass = `color-${colors[index % colors.length]}`;
+                        tipCard.className = `tip-card rounded-2xl shadow-lg overflow-hidden p-6 text-center ${colorClass}`;
+                        
+                        let iconClass = 'fa-lightbulb';
+                        if (tip.tipTitle.toLowerCase().includes('refrigerate') || tip.tipTitle.toLowerCase().includes('cold')) {
+                            iconClass = 'fa-snowflake';
+                        } else if (tip.tipTitle.toLowerCase().includes('water') || tip.tipTitle.toLowerCase().includes('hydrate') || tip.tipTitle.toLowerCase().includes('damp')) {
+                            iconClass = 'fa-tint';
+                        } else if (tip.tipTitle.toLowerCase().includes('trim') || tip.tipTitle.toLowerCase().includes('cut')) {
+                            iconClass = 'fa-cut';
+                        } else if (tip.tipTitle.toLowerCase().includes('wrap') || tip.tipTitle.toLowerCase().includes('paper') || tip.tipTitle.toLowerCase().includes('bag')) {
+                            iconClass = 'fa-newspaper';
+                        } else if (tip.tipTitle.toLowerCase().includes('air') || tip.tipTitle.toLowerCase().includes('ethylene')) {
+                             iconClass = 'fa-wind';
+                        }
+
+                        tipCard.innerHTML = `
+                            <div class="flex justify-center mb-4">
+                               <div class="icon-container w-16 h-16 rounded-full flex items-center justify-center">
+                                   <i class="fas ${iconClass} text-3xl"></i>
+                               </div>
+                            </div>
+                            <h3 class="text-xl font-bold mb-2">${tip.tipTitle}</h3>
+                            <p>${tip.description}</p>
+                        `;
+                        tipsGrid.appendChild(tipCard);
+                    });
+                } else {
+                    tipsGrid.innerHTML = `<p class="text-center col-span-full text-lg">No preservation tips were generated. Please try again!</p>`;
+                }
+
+                localStorage.removeItem('smartSortPreservationTips');
+            } else {
+                tipsMainTitle.textContent = 'No Tips Found';
+                tipsGrid.innerHTML = `<p class="text-center col-span-full text-lg">It looks like you came here directly. Please go back and predict a fruit's freshness to get tips!</p>`;
+            }
+            
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        });
+    </script>
+</body>
+</html>
+�
