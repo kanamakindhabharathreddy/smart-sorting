@@ -204,6 +204,3 @@ smart-sorting/
 - **Real-Time Video Analysis:** Implement a feature to use a device's camera for live, real-time freshness detection.
 - **Nutritional Information:** Add a feature to get detailed nutritional facts for the detected produce via the Gemini API.
 - **Cloud Deployment:** Deploy the application to a cloud platform like Render or AWS for public access.
-
-=======
-
