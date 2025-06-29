@@ -193,7 +193,7 @@ smart-sorting/
 │   └── test/
 │
 └── README.md               # This file
-<<<<<<< HEAD
+
 ```
 
 ---
@@ -207,12 +207,3 @@ smart-sorting/
 
 =======
 
-🔮 Future Scope
-Expand the Model: Train the model on more produce categories, including leafy greens and a wider variety of fruits.
-
-Real-Time Video Analysis: Implement a feature to use a device's camera for live, real-time freshness detection.
-
-Nutritional Information: Add a feature to get detailed nutritional facts for the detected produce via the Gemini API.
-
-Cloud Deployment: Deploy the application to a cloud platform like Render or AWS for public access.
->>>>>>> 9dd5ef9bcdda55c757f298fafe4e31cba6aa398e
