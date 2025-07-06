@@ -6,6 +6,6 @@ This folder contains the demo video for the smart sorting project. The video dem
 
 You can watch the demo video here:
 [Smart Sorting Demo Video]
-(https://drive.google.com/file/d/1G44jBeSnAnW61JGwrBshrM2c5IjLm1b-/view?usp=sharing)
+(https://drive.google.com/drive/folders/1UUvpuWYqOuKTqnh5qXqX3sTNjqDeS3vS?usp=sharing)
 
 ---
